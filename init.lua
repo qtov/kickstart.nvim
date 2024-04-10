@@ -302,7 +302,8 @@ require('lazy').setup({
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
-    branch = '0.1.x',
+    branch = 'master',
+    -- branch = '0.1.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -350,7 +351,7 @@ require('lazy').setup({
         --  All the info you're looking for is in `:help telescope.setup()`
         --
         defaults = {
-          file_ignore_patters = { '__pycache__/', 'venv*' },
+          file_ignore_patters = { '__pycache__/', '*venv*', '.tox*', 'frontend/' },
           mappings = {
             n = {
               ['x'] = require('telescope.actions').delete_buffer,
@@ -580,7 +581,18 @@ require('lazy').setup({
       local servers = {
         clangd = {},
         -- gopls = {},
-        pyright = {},
+        pyright = {
+          capabilities = capabilities,
+        },
+        ruff_lsp = {
+          capabilities = capabilities,
+          settings = {
+            organizeImports = false,
+          },
+          on_attach = function(client)
+            client.server_capabilities.hoverProvider = false
+          end,
+        },
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -620,8 +632,9 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
-        'flake8',
+        'black',
         'pyright',
+        'ruff-lsp',
         'debugpy',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -746,6 +759,7 @@ require('lazy').setup({
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
           ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<C-]>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
