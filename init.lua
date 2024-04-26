@@ -152,8 +152,14 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- Disable swap file.
+vim.opt.swapfile = false
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
+
+-- Save on Ctrl+s
+vim.keymap.set({ 'n', 'v', 'i' }, '<C-S>', '<C-c>:update<cr>', { silent = true, desc = 'Save' })
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
@@ -202,9 +208,11 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
-vim.api.nvim_create_autocmd('VimEnter', {
-  command = 'Neotree toggle',
-})
+-- vim.api.nvim_create_autocmd('VimEnter', {
+--   command = 'Neotree toggle',
+-- })
+
+vim.keymap.set('n', '<leader>n', '<Cmd>Neotree toggle<CR>', { desc = '[N]eotree toggle' })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -857,6 +865,7 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
@@ -888,6 +897,36 @@ require('lazy').setup({
       --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
       --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
     end,
+  },
+
+  {
+    'smoka7/hop.nvim',
+    branch = 'v2',
+    config = function()
+      local hop = require 'hop'
+      hop.setup {}
+      vim.keymap.set('n', 'SS', hop.hint_char2, { desc = '[SS]Hop Char 2' })
+      vim.keymap.set('n', 'SA', hop.hint_lines, { desc = '[SA]Hop Line' })
+      vim.keymap.set('n', 'SW', hop.hint_words, { desc = '[S]Hop [W]ords' })
+    end,
+  },
+
+  {
+    'smoka7/multicursors.nvim',
+    event = 'VeryLazy',
+    dependencies = {
+      'smoka7/hydra.nvim',
+    },
+    opts = {},
+    cmd = { 'MCstart', 'MCvisual', 'MCclear', 'MCpattern', 'MCvisualPattern', 'MCunderCursor' },
+    keys = {
+      {
+        mode = { 'v', 'n' },
+        '<Leader>m',
+        '<cmd>MCstart<cr>',
+        desc = 'Create a selection for selected text or word under the cursor',
+      },
+    },
   },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
