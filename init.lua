@@ -1035,7 +1035,7 @@ require('lazy').setup({
 
   {
     'smoka7/hop.nvim',
-    branch = 'v2',
+    branch = 'master',
     config = function()
       local hop = require 'hop'
       hop.setup {}
