@@ -440,6 +440,28 @@ require('lazy').setup({
         },
       }
 
+      local my_grep = function()
+        local cword = vim.fn.expand '<cword>'
+        require('telescope.builtin').live_grep {
+          default_text = cword,
+          on_complete = cword ~= ''
+              and {
+                function(picker)
+                  local mode = vim.fn.mode()
+                  local keys = mode ~= 'n' and '<ESC>' or ''
+                  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys .. [[^v$<C-g>]], true, false, true), 'n', true)
+                  -- should you have more callbacks, just pop the first one
+                  table.remove(picker._completion_callbacks, 1)
+                  -- copy mappings s.t. eg <C-n>, <C-p> works etc
+                  vim.tbl_map(function(mapping)
+                    vim.api.nvim_buf_set_keymap(0, 's', mapping.lhs, mapping.rhs, {})
+                  end, vim.api.nvim_buf_get_keymap(0, 'i'))
+                end,
+              }
+            or nil,
+        }
+      end
+
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
@@ -454,6 +476,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
+      vim.keymap.set('n', '<leader>sq', my_grep, { desc = '[S]earch [Q]uick word' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
