@@ -356,6 +356,8 @@ require('lazy').setup({
       -- Document existing key chains
       spec = {
         { '<leader>s', group = '[S]earch' },
+        { '<leader>j', group = '[J]ump' },
+        { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       },
@@ -1026,12 +1028,69 @@ require('lazy').setup({
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
-    -- There are additional nvim-treesitter modules that you can use to interact
-    -- with nvim-treesitter. You should go explore a few and see what interests you:
-    --
-    --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
-    --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
-    --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+    config = function(_, opts)
+      -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
+
+      ---@diagnostic disable-next-line: missing-fields
+      require('nvim-treesitter.configs').setup(opts)
+
+       -- Define function to get class name using Treesitter
+      local ts_utils = require 'nvim-treesitter.ts_utils'
+
+      function GetClassName()
+        local current_node = ts_utils.get_node_at_cursor()
+
+        while current_node do
+          if current_node:type() == 'class_definition' then
+            local class_name = vim.treesitter.get_node_text(current_node:child(1), 0)
+            print('Class Name:', class_name)
+            return class_name
+          end
+          current_node = current_node:parent()
+        end
+
+        print('No class found')
+        return nil
+      end
+
+      function GetClassNameAndJump()
+        local current_node = ts_utils.get_node_at_cursor()
+
+        -- Traverse the AST upwards to find the class definition node
+        while current_node do
+          if current_node:type() == 'class_definition' then
+            -- Get the class name from the child node (usually the first child in many languages)
+            local class_name = vim.treesitter.get_node_text(current_node:child(1), 0)
+
+            -- Get the start position of the class definition node
+            local start_row, start_col, _ = current_node:start()
+
+            -- Move the cursor to the start of the class definition
+            vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
+
+            print('Jumped to class:', class_name)
+            return class_name
+          end
+          current_node = current_node:parent()
+        end
+
+        print('No class found')
+        return nil
+      end
+
+      vim.keymap.set('n', '<leader>cn', ':lua GetClassName()<CR>',
+        { noremap = true, silent = true,
+          desc = 'Print method\'s class name' })
+      vim.keymap.set('n', '<leader>jc', ':lua GetClassNameAndJump()<CR>',
+        { noremap = true, silent = true,
+          desc = 'Jump to class definition'})
+      -- There are additional nvim-treesitter modules that you can use to interact
+      -- with nvim-treesitter. You should go explore a few and see what interests you:
+      --
+      --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
+      --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
+      --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+    end,
   },
 
   {
