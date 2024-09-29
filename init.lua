@@ -777,7 +777,18 @@ require('lazy').setup({
       --
       -- `mason` had to be setup earlier: to configure its options see the
       -- `dependencies` table for `nvim-lspconfig` above.
-      --
+      require('mason').setup()
+      -- Fix pyright slowing down editor.
+      -- https://github.com/neovim/neovim/issues/23725#issuecomment-1561364086
+      -- Test, and if not working, remove and install pylyzer
+      local ok, wf = pcall(require, "vim.lsp._watchfiles")
+      if ok then
+         -- disable lsp watcher. Too slow on linux
+         wf._watchfunc = function()
+           return function() end
+         end
+      end
+
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
