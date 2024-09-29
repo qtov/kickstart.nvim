@@ -651,7 +651,7 @@ require('lazy').setup({
       local servers = {
         clangd = {},
         -- gopls = {},
-        pyright = {
+        basedpyright = {
           capabilities = capabilities,
           settings = {
             disableOrganizeImports = true,
@@ -712,7 +712,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
-        'pyright',
+        'basedpyright',
         'ruff',
         'debugpy',
       })
