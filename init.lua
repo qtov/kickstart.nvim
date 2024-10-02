@@ -722,11 +722,19 @@ require('lazy').setup({
         basedpyright = {
           capabilities = capabilities,
           settings = {
-            disableOrganizeImports = true,
-          },
-          python = {
-            analysis = {
-              ignore = { '*' },
+            basedpyright = {
+              -- disableLanguageServices = true,
+              -- disableTaggedHints = true,
+              disableOrganizeImports = true,
+              analysis = {
+                ignore = { '*' },
+                typeCheckingMode = 'off',
+              },
+            },
+            python = {
+              analysis = {
+                ignore = { '*' },
+              },
             },
           },
         },
@@ -794,8 +802,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
-        'basedpyright',
-        'ruff',
+        -- 'pylyzer',
         'debugpy',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -816,48 +823,6 @@ require('lazy').setup({
       }
     end,
   },
-
-  -- { -- Autoformat
-  --   'stevearc/conform.nvim',
-  --   event = { 'BufWritePre' },
-  --   cmd = { 'ConformInfo' },
-  --   keys = {
-  --     {
-  --       '<leader>f',
-  --       function()
-  --         require('conform').format { async = true, lsp_format = 'fallback' }
-  --       end,
-  --       mode = '',
-  --       desc = '[F]ormat buffer',
-  --     },
-  --   },
-  --   opts = {
-  --     notify_on_error = false,
-  --     format_on_save = function(bufnr)
-  --       -- Disable "format_on_save lsp_fallback" for languages that don't
-  --       -- have a well standardized coding style. You can add additional
-  --       -- languages here or re-enable it for the disabled ones.
-  --       local disable_filetypes = { c = true, cpp = true, python = true }
-  --       local lsp_format_opt
-  --       if disable_filetypes[vim.bo[bufnr].filetype] then
-  --         return nil
-  --       else
-  --         return {
-  --           timeout_ms = 500,
-  --           lsp_format = 'fallback',
-  --         }
-  --       end
-  --     end,
-  --     formatters_by_ft = {
-  --       lua = { 'stylua' },
-  --       -- Conform can also run multiple formatters sequentially
-  --       -- python = { "isort", "black" },
-  --       --
-  --       -- You can use 'stop_after_first' to run the first available formatter from the list
-  --       -- javascript = { "prettierd", "prettier", stop_after_first = true },
-  --     },
-  --   },
-  -- },
 
   { -- Autocompletion
     'saghen/blink.cmp',
@@ -1125,6 +1090,7 @@ require('lazy').setup({
     end,
   },
 
+<<<<<<< HEAD
   {
     'smoka7/multicursors.nvim',
     event = 'VeryLazy',
@@ -1156,7 +1122,7 @@ require('lazy').setup({
   require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
