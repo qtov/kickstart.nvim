@@ -210,6 +210,25 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
+-- -- Normal-mode mappings
+-- vim.keymap.set("n", "<Leader>cn", "*``cgn", { noremap = true, silent = true })
+-- vim.keymap.set("n", "<Leader>cN", "*``cgN", { noremap = true, silent = true })
+--
+-- -- Visual-mode mappings (using expression mappings)
+-- vim.api.nvim_set_keymap(
+--   'v',
+--   '<Leader>cn',
+--   '"y/\\V<C-r>=escape(@\\", \'/\')<CR><CR>" . "``cgn"',
+--   { expr = true, noremap = true }
+-- )
+--
+-- vim.api.nvim_set_keymap(
+--   'v',
+--   '<Leader>cN',
+--   '"y/\\V<C-r>=escape(@\\", \'/\')<CR><CR>" . "``cgN"',
+--   { expr = true, noremap = true }
+-- )
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -223,12 +242,6 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.hl.on_yank()
   end,
 })
-
--- vim.api.nvim_create_autocmd('VimEnter', {
---   command = 'Neotree toggle',
--- })
-
-vim.keymap.set('n', '<leader>n', '<Cmd>Neotree toggle<CR>', { desc = '[N]eotree toggle' })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -1063,10 +1076,10 @@ require('lazy').setup({
         return nil
       end
 
-      vim.keymap.set('n', '<leader>cn', ':lua GetClassName()<CR>',
+      vim.keymap.set('n', '<leader>jn', ':lua GetClassName()<CR>',
         { noremap = true, silent = true,
           desc = 'Print method\'s class name' })
-      vim.keymap.set('n', '<leader>jc', ':lua GetClassNameAndJump()<CR>',
+      vim.keymap.set('n', '<leader>jj', ':lua GetClassNameAndJump()<CR>',
         { noremap = true, silent = true,
           desc = 'Jump to class definition'})
       -- There are additional nvim-treesitter modules that you can use to interact
@@ -1090,26 +1103,129 @@ require('lazy').setup({
     end,
   },
 
-<<<<<<< HEAD
+  -- {
+  --   'smoka7/multicursors.nvim',
+  --   event = 'VeryLazy',
+  --   dependencies = {
+  --     'smoka7/hydra.nvim',
+  --   },
+  --   opts = {},
+  --   cmd = { 'MCstart', 'MCvisual', 'MCclear', 'MCpattern', 'MCvisualPattern', 'MCunderCursor' },
+  --   keys = {
+  --     {
+  --       mode = { 'v', 'n' },
+  --       '<Leader>m',
+  --       '<cmd>MCstart<cr>',
+  --       desc = 'Create a selection for selected text or word under the cursor',
+  --     },
+  --   },
+  -- },
+
   {
-    'smoka7/multicursors.nvim',
-    event = 'VeryLazy',
-    dependencies = {
-      'smoka7/hydra.nvim',
-    },
-    opts = {},
-    cmd = { 'MCstart', 'MCvisual', 'MCclear', 'MCpattern', 'MCvisualPattern', 'MCunderCursor' },
-    keys = {
-      {
-        mode = { 'v', 'n' },
-        '<Leader>m',
-        '<cmd>MCstart<cr>',
-        desc = 'Create a selection for selected text or word under the cursor',
-      },
-    },
+    "jake-stewart/multicursor.nvim",
+    branch = "1.0",
+    config = function()
+        local mc = require("multicursor-nvim")
+
+        mc.setup()
+
+        local set = vim.keymap.set
+
+        -- Add or skip cursor above/below the main cursor.
+        set({"n", "v"}, "<C-up>",
+            function() mc.lineAddCursor(-1) end)
+        set({"n", "v"}, "<C-down>",
+            function() mc.lineAddCursor(1) end)
+        -- set({"n", "v"}, "<leader><C-up>",
+        --     function() mc.lineSkipCursor(-1) end)
+        -- set({"n", "v"}, "<leader><C-down>",
+        --     function() mc.lineSkipCursor(1) end)
+
+        -- Add or skip adding a new cursor by matching word/selection
+        set({"n", "v"}, "<leader>n",
+            function() mc.matchAddCursor(1) end)
+        set({"n", "v"}, "<leader>m",
+            function() mc.matchSkipCursor(1) end)
+        set({"n", "v"}, "<leader>N",
+            function() mc.matchAddCursor(-1) end)
+        set({"n", "v"}, "<leader>M",
+            function() mc.matchSkipCursor(-1) end)
+
+        -- Add all matches in the document
+        set({"n", "v"}, "<leader>A", mc.matchAllAddCursors)
+
+        -- You can also add cursors with any motion you prefer:
+        -- set("n", "<right>", function()
+        --     mc.addCursor("w")
+        -- end)
+        -- set("n", "<leader><right>", function()
+        --     mc.skipCursor("w")
+        -- end)
+
+        -- Rotate the main cursor.
+        set({"n", "v"}, "<C-left>", mc.nextCursor)
+        set({"n", "v"}, "<C-right>", mc.prevCursor)
+
+        -- Delete the main cursor.
+        set({"n", "v"}, "<leader>x", mc.deleteCursor)
+
+        -- Add and remove cursors with control + left click.
+        set("n", "<c-leftmouse>", mc.handleMouse)
+
+        -- Easy way to add and remove cursors using the main cursor.
+        set({"n", "v"}, "<c-q>", mc.toggleCursor)
+
+        -- Clone every cursor and disable the originals.
+        set({"n", "v"}, "<leader><c-q>", mc.duplicateCursors)
+
+        set("n", "<esc>", function()
+            if not mc.cursorsEnabled() then
+                mc.enableCursors()
+            elseif mc.hasCursors() then
+                mc.clearCursors()
+            else
+                -- Default <esc> handler.
+            end
+        end)
+
+        -- bring back cursors if you accidentally clear them
+        set("n", "<leader>gv", mc.restoreCursors)
+
+        -- Align cursor columns.
+        set("n", "<leader>a", mc.alignCursors)
+
+        -- Split visual selections by regex.
+        set("v", "S", mc.splitCursors)
+
+        -- Append/insert for each line of visual selections.
+        set("v", "I", mc.insertVisual)
+        set("v", "A", mc.appendVisual)
+
+        -- match new cursors within visual selections by regex.
+        set("v", "M", mc.matchCursors)
+
+        -- Rotate visual selection contents.
+        set("v", "<leader>t",
+            function() mc.transposeCursors(1) end)
+        set("v", "<leader>T",
+            function() mc.transposeCursors(-1) end)
+
+        -- Jumplist support
+        set({"v", "n"}, "<c-i>", mc.jumpForward)
+        set({"v", "n"}, "<c-o>", mc.jumpBackward)
+
+        -- Customize how cursors look.
+        local hl = vim.api.nvim_set_hl
+        hl(0, "MultiCursorCursor", { link = "Cursor" })
+        hl(0, "MultiCursorVisual", { link = "Visual" })
+        hl(0, "MultiCursorSign", { link = "SignColumn"})
+        hl(0, "MultiCursorDisabledCursor", { link = "Visual" })
+        hl(0, "MultiCursorDisabledVisual", { link = "Visual" })
+        hl(0, "MultiCursorDisabledSign", { link = "SignColumn"})
+    end
   },
 
-  -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
+  -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
 
