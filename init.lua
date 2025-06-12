@@ -172,6 +172,9 @@ vim.opt.swapfile = false
 
 -- Save on Ctrl+s
 vim.keymap.set({ 'n', 'v', 'i' }, '<C-S>', '<C-c>:update<cr>', { silent = true, desc = 'Save' })
+-- Save with sudo
+vim.keymap.set('c', 'w!!', "<esc>:lua require'utils'.sudo_write()<CR>", { silent = true })
+
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
