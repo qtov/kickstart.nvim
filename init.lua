@@ -655,24 +655,31 @@ require('lazy').setup({
       local servers = {
         clangd = {},
         -- gopls = {},
-        basedpyright = {
-          capabilities = capabilities,
+        -- basedpyright = {
+        --   capabilities = capabilities,
+        --   settings = {
+        --     basedpyright = {
+        --       -- disableLanguageServices = true,
+        --       -- disableTaggedHints = true,
+        --       disableOrganizeImports = true,
+        --       analysis = {
+        --         ignore = { '*' },
+        --         typeCheckingMode = 'off',
+        --       },
+        --     },
+        --     python = {
+        --       analysis = {
+        --         ignore = { '*' },
+        --       },
+        --     },
+        --   },
+        -- },
+        ty = {
           settings = {
-            basedpyright = {
-              -- disableLanguageServices = true,
-              -- disableTaggedHints = true,
-              disableOrganizeImports = true,
-              analysis = {
-                ignore = { '*' },
-                typeCheckingMode = 'off',
-              },
-            },
-            python = {
-              analysis = {
-                ignore = { '*' },
-              },
-            },
-          },
+            ty = {
+            -- ty language server settings go here
+            }
+          }
         },
         ruff = {
           capabilities = capabilities,
