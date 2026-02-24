@@ -934,79 +934,78 @@ require('lazy').setup({
     end,
   },
 
-  { -- Highlight, edit, and navigate code
+  {
     'nvim-treesitter/nvim-treesitter',
+    branch = 'main',
+    lazy = false,
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-    opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python' },
-      -- Autoinstall languages that are not installed
-      auto_install = true,
-      highlight = {
-        enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
-      },
-      indent = { enable = true, disable = { 'ruby' } },
-    },
     config = function()
-      local filetypes = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
-      require('nvim-treesitter').install(filetypes)
+      local ts = require('nvim-treesitter')
+      local fts = { 'python', 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+
+      ts.install(fts)
+
       vim.api.nvim_create_autocmd('FileType', {
-        pattern = filetypes,
-        callback = function() vim.treesitter.start() end,
+        pattern = fts,
+        callback = function(args)
+          pcall(vim.treesitter.start, args.buf)
+        end,
       })
 
-      function GetClassName()
-        local current_node = vim.treesitter.get_node()
-
-        while current_node do
-          if current_node:type() == 'class_definition' then
-            local class_name = vim.treesitter.get_node_text(current_node:child(1), 0)
-            print('Class Name:', class_name)
-            return class_name
+      -- Helper: find enclosing class name (Python-oriented node type)
+      local function get_class_name(bufnr)
+        local node = vim.treesitter.get_node({ bufnr = bufnr })
+        while node do
+          if node:type() == 'class_definition' then
+            local name_node = node:child(1)
+            if name_node then
+              return vim.treesitter.get_node_text(name_node, bufnr)
+            end
+            return nil
           end
-          current_node = current_node:parent()
+          node = node:parent()
         end
-
-        print('No class found')
         return nil
       end
 
-      function GetClassNameAndJump()
-        local current_node = vim.treesitter.get_node()
+      local function get_class_name_and_jump()
+        local bufnr = vim.api.nvim_get_current_buf()
+        local node = vim.treesitter.get_node({ bufnr = bufnr })
 
-        -- Traverse the AST upwards to find the class definition node
-        while current_node do
-          if current_node:type() == 'class_definition' then
-            -- Get the class name from the child node (usually the first child in many languages)
-            local class_name = vim.treesitter.get_node_text(current_node:child(1), 0)
+        while node do
+          if node:type() == 'class_definition' then
+            local name_node = node:child(1)
+            local class_name = name_node and vim.treesitter.get_node_text(name_node, bufnr) or nil
 
-            -- Get the start position of the class definition node
-            local start_row, start_col, _ = current_node:start()
-
-            -- Move the cursor to the start of the class definition
+            local start_row, start_col = node:start()
             vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
 
-            print('Jumped to class:', class_name)
+            if class_name then
+              print('Jumped to class: ' .. class_name)
+            else
+              print('Jumped to class')
+            end
             return class_name
           end
-          current_node = current_node:parent()
+          node = node:parent()
         end
 
         print('No class found')
         return nil
       end
 
-      vim.keymap.set('n', '<leader>jn', ':lua GetClassName()<CR>',
-        { noremap = true, silent = true,
-          desc = 'Print method\'s class name' })
-      vim.keymap.set('n', '<leader>jj', ':lua GetClassNameAndJump()<CR>',
-        { noremap = true, silent = true,
-          desc = 'Jump to class definition'})
+      vim.keymap.set('n', '<leader>jn', function()
+        local name = get_class_name(vim.api.nvim_get_current_buf())
+        if name then
+          print('Class Name: ' .. name)
+        else
+          print('No class found')
+        end
+      end, { noremap = true, silent = true, desc = 'Print class name' })
+
+      vim.keymap.set('n', '<leader>jj', function()
+        get_class_name_and_jump()
+      end, { noremap = true, silent = true, desc = 'Jump to class definition' })
       -- There are additional nvim-treesitter modules that you can use to interact
       -- with nvim-treesitter. You should go explore a few and see what interests you:
       --
